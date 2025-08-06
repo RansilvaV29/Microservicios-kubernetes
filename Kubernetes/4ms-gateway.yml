@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-1pi-gateway
+  namespace: microservicios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-1pi-gateway
+  template:
+    metadata:
+      labels:
+        app: ms-1pi-gateway
+    spec:
+      containers:
+        - name: ms-1pi-gateway
+          image: ransilvav29/ms-gateway:1.0 
+          ports:
+            - containerPort: 8000
+          env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://ms-eureka-server:8761/eureka/
+            - name: SERVER_PORT
+              value: "8000"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "true"
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-1pi-gateway
+  namespace: microservicios
+spec:
+  selector:
+    app: ms-1pi-gateway
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30001
+  type: NodePort

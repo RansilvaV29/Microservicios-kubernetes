@@ -1,0 +1,82 @@
+server:
+  port: ${SERVER_PORT:8000}
+
+spring:
+  application:
+    name: API-GATEWAY
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      server:
+        webmvc:
+          routes:
+            - id: ms-publicaciones-autor
+              uri: lb://SERVICIO-PUBLICACIONES
+              predicates:
+                - Path=/api/v1/api/autores/**
+              filters:
+                - StripPrefix=2
+            - id: ms-publicaciones-libro
+              uri: lb://SERVICIO-PUBLICACIONES
+              predicates:
+                - Path=/api/v1/api/libros/**
+              filters:
+                - StripPrefix=2
+            - id: ms-publicaciones-articulos-cientificos
+              uri: lb://SERVICIO-PUBLICACIONES
+              predicates:
+                - Path=/api/v1/api/articulos-cientificos/**
+              filters:
+                - StripPrefix=2
+            - id: ms-notificaciones
+              uri: lb://SERVICIO-NOTIFICACIONES
+              predicates:
+                - Path=/api/v1/notificaciones/**
+              filters:
+                - StripPrefix=2
+            - id: ms-catalogo
+              uri: lb://SERVICIO-CATALOGO
+              predicates:
+                - Path=/api/v1/catalogo/**
+              filters:
+                - StripPrefix=2
+            - id: ms-authentication
+              uri: lb://SERVICIO-AUTENTICACION
+              predicates:
+                - Path=/api/v1/api/auth/**
+              filters:
+                - StripPrefix=2
+            - id: ms-authentication-roles
+              uri: lb://SERVICIO-AUTENTICACION
+              predicates:
+                - Path=/api/v1/api/roles/**
+              filters:
+                - StripPrefix=2
+  security:
+    enabled: false  # Deshabilita seguridad para pruebas
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://ms-eureka-server:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG

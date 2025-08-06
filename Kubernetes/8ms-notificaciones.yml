@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-notificaciones
+  namespace: microservicios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-notificaciones
+  template:
+    metadata:
+      labels:
+        app: ms-notificaciones
+    spec:
+      containers:
+        - name: ms-notificaciones
+          image: ransilvav29/ms-notificaciones:1.0
+          ports:
+            - containerPort: 8085
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/notificaciones_db?user=postgres&password=postgres
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: admin
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: admin
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://ms-eureka-server:8761/eureka/
+            - name: SERVER_PORT
+              value: "8085"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "true"
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-notificaciones
+  namespace: microservicios
+spec:
+  selector:
+    app: ms-notificaciones
+  ports:
+    - port: 8085
+      targetPort: 8085
+      nodePort: 30085
+  type: NodePort

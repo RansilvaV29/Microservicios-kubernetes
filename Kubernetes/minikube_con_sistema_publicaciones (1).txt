@@ -1,0 +1,107 @@
+minikube start --driver=docker
+minikube addons enable ingress
+minikube dashboard
+
+#construir la imagen de docker de cada proyecto y publicarla
+cd ms-eureka-server
+docker login
+docker build -t ms-eureka-server .
+docker tag ms-eureka-server ransilvav29/ms-eureka-server:1.0
+docker push ransilvav29/ms-eureka-server:1.0
+cd ..
+
+cd ms-api-gateway/
+docker build -t ms-gateway .
+docker tag ms-gateway ransilvav29/ms-gateway:1.0
+docker push ransilvav29/ms-gateway:1.0
+cd ..
+
+cd sincronizacion/
+docker build -t sincronizacion .
+docker tag sincronizacion ransilvav29/sincronizacion:1.0
+docker push ransilvav29/sincronizacion:1.0
+cd ..
+
+cd ms-catalogo
+docker build -t ms-catalogo .
+docker tag ms-catalogo ransilvav29/ms-catalogo:1.0
+docker push ransilvav29/ms-catalogo:1.0
+cd ..
+
+cd ms-publicaciones-repaso/
+docker build -t ms-publicaciones-repaso .
+docker tag ms-publicaciones-repaso ransilvav29/ms-publicaciones-repaso:1.0
+docker push ransilvav29/ms-publicaciones-repaso:1.0
+cd ..
+
+cd ms-notificaciones
+docker build -t ms-notificaciones .
+docker tag ms-notificaciones ransilvav29/ms-notificaciones:1.0
+docker push ransilvav29/ms-notificaciones:1.0
+cd ..
+
+cd ms-authentication
+docker build -t ms-authentication .
+docker tag ms-authentication ransilvav29/ms-authentication:1.0
+docker push ransilvav29/ms-authentication:1.0
+cd ..
+
+
+kubectl apply -f 1database.yml
+kubectl apply -f 2rabbitmq.yml
+kubectl apply -f 3eureka.yml
+kubectl apply -f 4ms-gateway.yml
+kubectl apply -f 5ms-sincronizacion.yml
+kubectl apply -f 6ms-catalogo.yml
+kubectl apply -f 7ms-publicaciones.yml
+kubectl apply -f 8ms-notificaciones.yml
+kubectl apply -f 9ms-authentication.yml
+
+
+#para ver todos los cotenedores de ese pod microservicios
+kubectl get pods -n microservicios
+
+
+#crear la base de datos dede la consola de postgres
+kubectl exec -it postgres-684bb4945f-np68k -n microservicios -- psql -U postgres
+
+CREATE DATABASE authdb;
+CREATE DATABASE notificaciones_db;
+CREATE DATABASE publicaciones_db;
+CREATE DATABASE notificaciones_db;
+CREATE DATABASE catalogo_db;
+
+
+
+##Para poner como services
+
+#aplicar los dominios del archivo hosts.
+kubectl apply -f ingress.yml
+
+
+#Tunner el un cmd
+minikube tunnel
+
+#en el archivo host
+127.0.0.1 	app-publicaciones.local
+127.0.0.1  	rabbitmq.local
+127.0.0.1  	ms-eureka-server.local
+
+#reiniciar las ips
+ipconfig /flushdns
+
+#Reconstruir la imagen de docker hub
+
+mvn clean package -DskipTests  
+
+docker build -t ransilvav29/ms-api-gateway:0.1 .
+docker push ransilvav29/ms-api-gateway:0.1
+
+
+docker push ransilvav29/ms-catalogo:0.1
+
+
+
+kubectl apply -f 4ms-gateway.yml
+kubectl delete pod -l app=ms-1pi-gateway -n microservicios
+

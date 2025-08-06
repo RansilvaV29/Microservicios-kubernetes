@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-authentication
+  namespace: microservicios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-authentication
+  template:
+    metadata:
+      labels:
+        app: ms-authentication
+    spec:
+      containers:
+        - name: ms-authentication
+          image: ransilvav29/ms-authentication:1.0
+          ports:
+            - containerPort: 8083
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/authdb?user=postgres&password=postgres
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://ms-eureka-server:8761/eureka/
+            - name: SERVER_PORT
+              value: "8083"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "true"
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-authentication
+  namespace: microservicios
+spec:
+  selector:
+    app: ms-authentication
+  ports:
+    - port: 8083
+      targetPort: 8083
+      nodePort: 30083
+  type: NodePort

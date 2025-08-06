@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-publicaciones-repaso
+  namespace: microservicios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-publicaciones-repaso
+  template:
+    metadata:
+      labels:
+        app: ms-publicaciones-repaso
+    spec:
+      containers:
+        - name: ms-publicaciones-repaso
+          image: ransilvav29/ms-publicaciones-repaso:1.0
+          ports:
+            - containerPort: 8088
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/publicaciones_db?user=postgres&password=postgres
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: admin
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: admin
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://ms-eureka-server:8761/eureka/
+            - name: SERVER_PORT
+              value: "8088"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "true"
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-publicaciones-repaso
+  namespace: microservicios
+spec:
+  selector:
+    app: ms-publicaciones-repaso
+  ports:
+    - port: 8088  # Alineado con el puerto del contenedor
+      targetPort: 8088
+      nodePort: 30080
+  type: NodePort

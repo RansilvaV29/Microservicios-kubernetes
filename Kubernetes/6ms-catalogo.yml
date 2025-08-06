@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-catalogo
+  namespace: microservicios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-catalogo
+  template:
+    metadata:
+      labels:
+        app: ms-catalogo
+    spec:
+      containers:
+        - name: ms-catalogo
+          image: ransilvav29/ms-catalogo:1.0
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/catalogo_db?user=postgres&password=postgres
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: admin
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: admin
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://ms-eureka-server:8761/eureka/
+            - name: SERVER_PORT
+              value: "8082"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "true"
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-catalogo
+  namespace: microservicios
+spec:
+  selector:
+    app: ms-catalogo
+  ports:
+    - port: 8082
+      targetPort: 8082
+      nodePort: 30082
+  type: NodePort

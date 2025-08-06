@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-sincronizacion
+  namespace: microservicios
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-sincronizacion
+  template:
+    metadata:
+      labels:
+        app: ms-sincronizacion
+    spec:
+      containers:
+        - name: ms-sincronizacion
+          image: ransilvav29/sincronizacion:1.0
+          ports:
+            - containerPort: 8084
+          env:
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: SPRING_RABBITMQ_USERNAME
+              value: admin
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: admin
+            - name: SERVER_PORT
+              value: "8084"
+            - name: RELOJ_INTERVALO
+              value: "10"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-sincronizacion
+  namespace: microservicios
+spec:
+  selector:
+    app: ms-sincronizacion
+  ports:
+    - port: 8084
+      targetPort: 8084
+      nodePort: 30084
+  type: NodePort
