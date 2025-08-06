@@ -2,3 +2,6 @@ env
 .env
 venv
 .venv
+
+#ignorar los docker compose
+docker-compose.yml
